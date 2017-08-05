@@ -1,11 +1,23 @@
 var express = require('express');
 var router = express.Router();
 var userClient = require('../clients/userClient');
+var validation = require('../clients/validations');
+var authTokenClient = require('../clients/authTokenClient');
+
 /* GET users listing. */
 
 router.post('/register', function (req, res, next) {
-    let email = req.body.email, password = req.body.password;
-// TODO: add other validation
+    let email = req.body.email, password = req.body.password, passwordConfirm = req.body.passwordConfirm;
+    let validationErrors = {email: [], password: []};
+    validationErrors.email.push(...validation.validateEmail(email));
+    validationErrors.password.push(...validation.validatePassword(password));
+    validationErrors.password.push(...validation.arePasswordsSame(password, passwordConfirm));
+    console.log(validationErrors);
+    if ((validationErrors.email.length + validationErrors.password.length) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors})
+    }
+
     userClient.getUserByEmail(email, function (users) {
         if (users.length !== 0) {
             res.status(400);
@@ -19,24 +31,27 @@ router.post('/register', function (req, res, next) {
 
 });
 
-//TODO: add password validation
 router.post('/login', function (req, res, next) {
     let email = req.body.email, password = req.body.password;
-    let validationErrors = [];
-    validationErrors.push(validateEmail(email));
-    validationErrors.push(validatePassword(password));
+    let validationErrors = {email: [], password: []};
+    validationErrors.email.push(...validation.validateEmail(email));
+    validationErrors.password.push(...validation.validatePassword(password));
 
-    if(validationErrors.length != 0 ){
+    if ((validationErrors.email.length + validationErrors.password.length) !== 0) {
         res.status(400);
         return res.json({"errors": validationErrors})
     }
+
     userClient.getUserByEmail(email, function (users) {
         // if user exists
         if (users.length !== 0) {
             let user = users[0];
             // if password is vaild
             if (userClient.isPasswordValid(user, password)) {
-
+                authTokenClient.createToken(user.id, user.email, function (token) {
+                    res.status(201);
+                    return res.json({apiToken: token})
+                })
             } else {
                 res.status(400);
                 return res.json({error: {email: "Password is not vaild"}});
@@ -44,10 +59,11 @@ router.post('/login', function (req, res, next) {
         } else {
             res.status(400);
             return res.json({error: {email: "User Does not Exist"}});
+
         }
 
+    });
 
-    })
-})
+});
 
 module.exports = router;

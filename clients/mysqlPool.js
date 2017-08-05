@@ -4,6 +4,7 @@ module.exports = mysql.createPool({
     connectionLimit : 30,
     host : 'localhost',
     user : 'root',
-    database : 'instalike'
+    database : 'instalike',
+    password: 'online13'
 });
 
