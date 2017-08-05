@@ -5,7 +5,7 @@ var passwordHash = require('password-hash');
 class AuthTokenClient {
     constructor() {
         this.createAuthTokenSQL = 'INSERT INTO `authorizedUsers`( `token`, `userID`) VALUES (? , ? );';
-        this.getAuthTokenSQL = 'SELECT * FROM `authorizedUsers` WHERE userID = ? AND createdAt > ?;';
+        this.getAuthTokenSQL = 'SELECT * FROM `authorizedUsers` WHERE token = ? AND createdAt > ?;';
     }
 
     createToken(userID, userEmail, cb) {
@@ -16,9 +16,9 @@ class AuthTokenClient {
         });
     }
 
-    getAuthToken(userID) {
+    getAuthToken(token, cb) {
         let date = new Date().toISOString();
-        mysqlPool.query(this.getAuthTokenSQL, [id, date], function (err, tokens, fields) {
+        mysqlPool.query(this.getAuthTokenSQL, [token, date], function (err, tokens, fields) {
             if(err) throw err;
             cb(tokens);
         })
