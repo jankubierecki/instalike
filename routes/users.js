@@ -14,7 +14,7 @@ router.post('/register', function (req, res, next) {
     validationErrors.password.push(...validation.validatePassword(password));
     validationErrors.password.push(...validation.arePasswordsSame(password, passwordConfirm));
 
-    if ((validationErrors.email.length + validationErrors.password.length) !== 0) {
+    if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
         return res.json({"errors": validationErrors})
     }
@@ -39,7 +39,7 @@ router.post('/login', function (req, res, next) {
     validationErrors.email.push(...validation.validateEmail(email));
     validationErrors.password.push(...validation.validatePassword(password));
 
-    if ((validationErrors.email.length + validationErrors.password.length) !== 0) {
+    if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
         return res.json({"errors": validationErrors})
     }

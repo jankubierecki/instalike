@@ -39,12 +39,12 @@ class Validators {
         return errors;
     }
 
-    validateDescription(description) {
-        return this.validateString(description, "Description", 200);
+    validateDescription(description, isRequired = true) {
+        return this.validateString(description, "Description", 200, isRequired);
     }
 
-    validateTitle(title) {
-        return this.validateString(title, "Title", 50);
+    validateTitle(title, isRequired = true) {
+        return this.validateString(title, "Title", 50, isRequired);
     }
 
     validatePhoto(photo) {
@@ -53,9 +53,13 @@ class Validators {
         return errors;
     }
 
-    validateString(value, fileName, maxLength) {
+    validateString(value, fileName, maxLength, isRequired) {
         let errors = [];
-        if (value === "" || value === undefined) errors.push(fileName + ' cannot be empty');
+
+        if (isRequired) {
+            if (value === "" || value === undefined) errors.push(fileName + ' cannot be empty');
+        }
+
         if (value !== undefined && value.length > maxLength) errors.push(fileName + ' cannot be larger than ' + maxLength + ' characters');
         return errors;
     }
@@ -64,6 +68,12 @@ class Validators {
         return Object.keys(validationErrors).reduce(function (previous, current) {
             return validationErrors[current].length;
         }, 0);
+    }
+
+    validateTokenHeader(token) {
+        let errors = [];
+        if (token === undefined) errors.push('Authorization token is missing, can be obtained by user/login');
+        return errors;
     }
 
 }
