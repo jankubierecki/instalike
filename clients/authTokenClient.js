@@ -17,8 +17,9 @@ class AuthTokenClient {
     }
 
     getAuthToken(token, cb) {
-        let date = new Date().toISOString();
-        mysqlPool.query(this.getAuthTokenSQL, [token, date], function (err, tokens, fields) {
+        let date = new Date();
+        date.setDate(date.getDate() - 1);
+        mysqlPool.query(this.getAuthTokenSQL, [token, date.toISOString()], function (err, tokens, fields) {
             if(err) throw err;
             cb(tokens);
         })

@@ -4,7 +4,8 @@ var userClient = require('../clients/userClient');
 var validation = require('../clients/validations');
 var authTokenClient = require('../clients/authTokenClient');
 
-/* GET users listing. */
+
+// CREATE user
 
 router.post('/register', function (req, res, next) {
     let email = req.body.email, password = req.body.password, passwordConfirm = req.body.passwordConfirm;
@@ -12,7 +13,7 @@ router.post('/register', function (req, res, next) {
     validationErrors.email.push(...validation.validateEmail(email));
     validationErrors.password.push(...validation.validatePassword(password));
     validationErrors.password.push(...validation.arePasswordsSame(password, passwordConfirm));
-    console.log(validationErrors);
+
     if ((validationErrors.email.length + validationErrors.password.length) !== 0) {
         res.status(400);
         return res.json({"errors": validationErrors})
@@ -31,6 +32,7 @@ router.post('/register', function (req, res, next) {
 
 });
 
+// ADD TOKEN to the user
 router.post('/login', function (req, res, next) {
     let email = req.body.email, password = req.body.password;
     let validationErrors = {email: [], password: []};
@@ -42,11 +44,10 @@ router.post('/login', function (req, res, next) {
         return res.json({"errors": validationErrors})
     }
 
+
     userClient.getUserByEmail(email, function (users) {
-        // if user exists
         if (users.length !== 0) {
             let user = users[0];
-            // if password is vaild
             if (userClient.isPasswordValid(user, password)) {
                 authTokenClient.createToken(user.id, user.email, function (token) {
                     res.status(201);

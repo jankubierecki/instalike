@@ -10,10 +10,25 @@
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "~4.15.2",
+    "express-fileupload": "^0.1.4",
     "jade": "~1.11.0",
     "morgan": "~1.8.1",
     "mysql": "^2.14.1",
     "password-hash": "^1.2.2",
-    "serve-favicon": "~2.4.2"
-  }
+    "serve-favicon": "~2.4.2",
+    "shortid": "^2.2.8"
+  },
+  "description": "insta-like",
+  "main": "app.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jankubierecki/instalike.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jankubierecki/instalike/issues"
+  },
+  "homepage": "https://github.com/jankubierecki/instalike#readme"
 }

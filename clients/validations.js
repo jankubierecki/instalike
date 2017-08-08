@@ -31,6 +31,41 @@ class Validators {
         if (old !== passwordConfirm) errors.push('Passwords are not equal');
         return errors;
     }
+
+    validateImageExtension(image) {
+        let errors = [];
+        let reg = /\.(jpe?g)$/i;
+        if (!reg.test(image.name)) errors.push('Image file extension is incorrect');
+        return errors;
+    }
+
+    validateDescription(description) {
+        return this.validateString(description, "Description", 200);
+    }
+
+    validateTitle(title) {
+        return this.validateString(title, "Title", 50);
+    }
+
+    validatePhoto(photo) {
+        let errors = [];
+        if (photo.data.length > 307200) errors.push('Image file size is too big, max size is 3 mb');
+        return errors;
+    }
+
+    validateString(value, fileName, maxLength) {
+        let errors = [];
+        if (value === "" || value === undefined) errors.push(fileName + ' cannot be empty');
+        if (value !== undefined && value.length > maxLength) errors.push(fileName + ' cannot be larger than ' + maxLength + ' characters');
+        return errors;
+    }
+
+    getErrorCount(validationErrors) {
+        return Object.keys(validationErrors).reduce(function (previous, current) {
+            return validationErrors[current].length;
+        }, 0);
+    }
+
 }
 
 module.exports = new Validators();
