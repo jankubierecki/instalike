@@ -66,7 +66,7 @@ class Validators {
 
     getErrorCount(validationErrors) {
         return Object.keys(validationErrors).reduce(function (previous, current) {
-            return validationErrors[current].length;
+            return previous + validationErrors[current].length;
         }, 0);
     }
 
