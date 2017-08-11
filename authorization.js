@@ -7,7 +7,7 @@ module.exports = function (req, res, next) {
         var apiToken = req.header('Authorization');
         let validationErrors;
         validationErrors = {apiToken: []};
-        validationErrors.apiToken.push(...validation.validateTokenHeader(apiToken));
+        validationErrors.apiToken.push(...validation.validateTokenHeader({token: apiToken}));
 
         if (validation.getErrorCount(validationErrors) !== 0) {
             res.status(401);

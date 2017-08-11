@@ -1,19 +1,20 @@
 var express = require('express');
-var postClient = require('../clients/postClient');
-var validation = require('../clients/validations');
 var router = express.Router();
+var postClient = require('../clients/postClient');
 var path = require('path');
 var shortid = require('shortid');
 var fs = require('fs');
 var serializer = require('../serializer/serializer');
+var validation = require('../clients/validations');
 
 
 // CREATE NEW POST
 
-router.post('/', function (req, res, next) {
+router.post('/create', function (req, res, next) {
     let title = req.body.title;
     let description = req.body.description;
     let fotoFile = req.files.fotoFile;
+    let author = req.userID;
     let fileName = shortid.generate() + fotoFile.name;
 
     let validationErrors;
@@ -30,26 +31,30 @@ router.post('/', function (req, res, next) {
 
     fotoFile.mv(path.join(postClient.fileUploadPath, fileName), function (err) {
         if (err) return res.sendStatus(500);
-        postClient.createPost(title, description, req.userID, path.join('uploads/posts/', fileName), function () {
+        postClient.createPost(title, description, author, path.join('uploads/posts/', fileName), function () {
             return res.sendStatus(201);
         })
     });
+
 });
+
+//UPDATE POST
 
 router.put('/:id', function (req, res, next) {
     let postId = req.params.id;
+    let user = req.userID;
     let title = req.body.title;
     let description = req.body.description;
-    let validationErrors = {title: [], description: []};
+    let validationErrors = {title: [], description: [], author: []};
     validationErrors.title.push(...validation.validateTitle(title, false));
     validationErrors.description.push(...validation.validateDescription(description, false));
+
 
     if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
         return res.json({"errors": validationErrors});
     }
 
-    //todo validate if requested user is author.
     postClient.getPost(postId, function (posts) {
         // if post was not found
         if (posts.length === 0) return res.sendStatus(404);
@@ -58,14 +63,48 @@ router.put('/:id', function (req, res, next) {
         if (!(title === undefined || title === '')) post.title = title;
         if (!(description === undefined || description === '')) post.description = description;
 
-        postClient.updatePost(post, function () {
-            return res.json(serializer.serializePost(post));
-        })
-    })
+        if (post.userID === user) {
+            postClient.updatePost(post, function () {
+                return res.json(serializer.serializePost(post));
+            });
+        } else {
+            return res.sendStatus(403);
+        }
+    });
 });
 
-// TODO DELETE POST router.delete(/:id) //todo validate if requested user is author.
-// TODO GET POST router.get(/:id)
+//DELETE POST
+
+router.delete('/:id', function (req, res, next) {
+    let postId = req.params.id;
+    let user = req.userID;
+
+    postClient.getPost(postId, function (posts) {
+        // if post was not found
+        if (posts.length === 0) return res.sendStatus(404);
+        let post = posts[0];
+
+        if (post.userID === user) {
+            postClient.deletePost(postId, function () {
+                return res.sendStatus(200);
+            });
+        } else {
+            return res.sendStatus(403);
+        }
+    });
+});
+
+//GET SPECIFIC POST
+
+router.get('/get/:id', function (req, res, next) {
+    let postId = req.params.id;
+
+    postClient.getPost(postId, function (posts) {
+        if (posts.length === 0) return res.sendStatus(404);
+        let post = posts[0];
+        return res.json(serializer.serializePost(post));
+    })
+});
 
 // GET PHOTO FILE
 
@@ -82,11 +121,19 @@ router.get('/uploads/posts/:fileName', function (req, res, next) {
 
 });
 
+//GET POST USERS
+
 router.get('/author/', function (req, res, next) {
     let page = req.query.page === undefined ? 0 : req.query.page;
+    let validationErrors = {page: []};
+    validationErrors.page.push(...validation.validatePage(page));
+
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors});
+    }
     postClient.getPostsForUsers([req.userID], page, function (posts) {
-        //todo validate page (int, unsigned int, +/-)
-        return res.json({"page": page, "posts": posts.map(serializer.serializePost)});
+        return console.log(validationErrors) + res.json({"page": page, "posts": posts.map(serializer.serializePost)});
     })
 });
 

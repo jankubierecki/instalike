@@ -26,13 +26,13 @@ router.post('/register', function (req, res, next) {
         } else {
             userClient.createUser(email, password, function () {
                 return res.sendStatus(201);
-            })
+            });
         }
-    })
+    });
 
 });
 
-// ADD TOKEN to the user
+// LOGIN and ADD TOKEN to the user
 router.post('/login', function (req, res, next) {
     let email = req.body.email, password = req.body.password;
     let validationErrors = {email: [], password: []};

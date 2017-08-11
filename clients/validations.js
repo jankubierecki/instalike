@@ -10,7 +10,7 @@ class Validators {
         // typical email pattern, also avaiable : mysite@you.me.net:
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-        !reg.test(email) ? errors.push('Email is not vaild') : console.log('email is vaild');
+        if (reg.test(email) === false) errors.push('Email is not vaild');
 
         return errors;
     }
@@ -21,7 +21,7 @@ class Validators {
         //Minimum eight characters, at least one letter, one number and one special character:
         let reg = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
 
-        !reg.test(password) ? errors.push('Password does not meet the requirements') : console.log('password is vaild');
+        if (reg.test(password) === false) errors.push('Password does not meet the requirements');
 
         return errors;
     }
@@ -34,7 +34,7 @@ class Validators {
 
     validateImageExtension(image) {
         let errors = [];
-        let reg = /\.(jpe?g)$/i;
+        let reg = /\.(jpe?g|png|gif|bmp)$/i;
         if (!reg.test(image.name)) errors.push('Image file extension is incorrect');
         return errors;
     }
@@ -66,16 +66,23 @@ class Validators {
 
     getErrorCount(validationErrors) {
         return Object.keys(validationErrors).reduce(function (previous, current) {
-            return validationErrors[current].length;
+            return previous + validationErrors[current].length;
         }, 0);
     }
 
-    validateTokenHeader(token) {
+    validateTokenHeader(parameters) {
+        let token = parameters.token;
         let errors = [];
         if (token === undefined) errors.push('Authorization token is missing, can be obtained by user/login');
         return errors;
     }
 
+    validatePage(page) {
+        let errors = [];
+        let reg = /^\d+$/;
+        if (reg.test(page) === false) errors.push('input can only be a positive number');
+        return errors;
+    }
 }
 
 module.exports = new Validators();
