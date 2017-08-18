@@ -157,6 +157,14 @@ router.get('/stream/', function (req, res, next) {
     })
 });
 
+router.get('/search/', function (req, res, next) {
+    let queries = req.query.string.split(' ');
+    //todo validate ueries
+    postClient.searchPost(queries, function (posts) {
+        return res.json(posts.map(serializer.serializePost));
+
+    });
+});
 
 
 

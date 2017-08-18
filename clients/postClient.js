@@ -16,6 +16,7 @@ class PostClient {
             'from posts INNER JOIN users ON posts.userID = users.id ' +
             'WHERE userID IN (SELECT friendID FROM friends WHERE userID = ?) OR userID = ? ' +
             'ORDER BY `users`.`id` DESC';
+
     }
 
 
@@ -67,6 +68,30 @@ class PostClient {
             cb(rows);
             //todo paginate limit
         })
+    }
+
+    searchPost(queries, cb) {
+        let baseSQL = "SELECT * FROM `posts` WHERE";
+        let likeSQL = " title LIKE CONCAT('%', ?, '%')";
+        let orderSQL = " ORDER BY createdAt DESC";
+        let finalSQL = baseSQL;
+        for (let i in queries) {
+            if (i === '0') {
+                finalSQL += likeSQL;
+            } else {
+                finalSQL += ' AND' + likeSQL;
+            }
+        }
+
+        finalSQL += orderSQL;
+
+        console.log(finalSQL);
+
+        mysqlPool.query(finalSQL, queries, function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows);
+        })
+
     }
 
 }

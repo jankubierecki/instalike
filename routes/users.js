@@ -117,5 +117,15 @@ router.get('/profile/:id(\\d+)/', function (req, res, next) {
     return getProfile(req.params.id, res);
 });
 
+router.get('/search', function (req, res, next) {
+    let string = req.query.string;
+    //todo validate if string is correct add pagination while searching for user
+
+    userClient.searchUser(string, function (posts) {
+        return res.json(posts.map(serializer.serializeUser));
+
+    });
+
+});
 
 module.exports = router;

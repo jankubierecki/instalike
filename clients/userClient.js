@@ -13,6 +13,8 @@ class UserClient {
             'WHERE f.userID = ?;';
         this.createUserFriendSQL = 'INSERT INTO `friends` (`id`, `userID`, `friendID`) VALUES (NULL, ?, ?);';
         this.getUserByIDSQL = 'SELECT * FROM `users` WHERE id = ? ;';
+        this.searchUserSQL = "SELECT id, email FROM `users` HAVING LEFT(email, LOCATE('@', email) - 1) LIKE CONCAT('%', ?, '%')";
+
 
     }
 
@@ -54,6 +56,13 @@ class UserClient {
             if (err) throw err;
             cb(rows);
         });
+    }
+
+    searchUser(string, cb) {
+        mysqlPool.query(this.searchUserSQL, [string], function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows);
+        })
     }
 }
 
