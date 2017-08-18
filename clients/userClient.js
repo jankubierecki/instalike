@@ -4,12 +4,20 @@ var passwordHash = require('password-hash');
 
 class UserClient {
     constructor() {
-        this.getUserSQL = 'SELECT * FROM `users` WHERE email = ? ;';
+        this.getUserByEmailSQL = 'SELECT * FROM `users` WHERE email = ? ;';
         this.createUserSQL = 'INSERT INTO `users`(`id`, `email`, `password`) VALUES (NULL, ?, ?);';
+        this.getFriendsSQL =
+            'SELECT f.id, u.id AS friendID, u.email AS friendEmail ' +
+            'FROM friends AS f ' +
+            'INNER JOIN users AS u ON f.friendID = u.id ' +
+            'WHERE f.userID = ?;';
+        this.createUserFriendSQL = 'INSERT INTO `friends` (`id`, `userID`, `friendID`) VALUES (NULL, ?, ?);';
+        this.getUserByIDSQL = 'SELECT * FROM `users` WHERE id = ? ;';
+
     }
 
     getUserByEmail(email, cb) {
-        mysqlPool.query(this.getUserSQL, [email], function (err, rows, fields) {
+        mysqlPool.query(this.getUserByEmailSQL, [email], function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
         });
@@ -25,6 +33,27 @@ class UserClient {
 
     isPasswordValid(user, password) {
         return passwordHash.verify(password, user.password);
+    }
+
+    getFriends(userID, cb) {
+        mysqlPool.query(this.getFriendsSQL, [userID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows);
+        });
+    }
+
+    createUserFriend(userID, friendID, cb) {
+        mysqlPool.query(this.createUserFriendSQL, [userID, friendID], function (err, fields) {
+            if (err) throw err;
+            cb();
+        });
+    }
+
+    getUserByID(userID, cb) {
+        mysqlPool.query(this.getUserByIDSQL, [userID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows);
+        });
     }
 }
 

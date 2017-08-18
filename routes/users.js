@@ -3,6 +3,8 @@ var router = express.Router();
 var userClient = require('../clients/userClient');
 var validation = require('../clients/validations');
 var authTokenClient = require('../clients/authTokenClient');
+var serializer = require('../serializer/serializer');
+var postClient = require('../clients/postClient');
 
 
 // CREATE user
@@ -66,5 +68,54 @@ router.post('/login', function (req, res, next) {
     });
 
 });
+
+
+router.post('/friends', function (req, res, next) {
+    let friendID = req.body.friendID;
+    let userID = req.userID;
+
+    //todo validate if is is friendID AND if the friend exists AND is not already a friend and you cannot be friend with yourself
+    userClient.createUserFriend(userID, friendID, function () {
+        return res.sendStatus(201);
+    });
+});
+
+
+// todo delete friend (new route)
+
+
+var getProfile = function (userID, res) {
+    let profile = {user: {}, posts: [], postCount: 0, friendsCount: 0, userFollowersCount: 0}
+//todo add another two counts ( friendscount and userfollowerscount)
+    userClient.getUserByID(userID, function (users) {
+        if (users.length !== 1) return res.sendStatus(404);
+        let user = users[0];
+        profile.user = serializer.serializeUser(user);
+
+        postClient.getPostCount(userID, function (postCount) {
+            profile.postCount = postCount;
+
+            postClient.getPostsForUsers([userID], 0, function (posts) {
+                profile.posts = posts.map(serializer.serializePost);
+                return res.json(profile);
+            });
+
+        })
+    });
+
+
+};
+
+//todo add list friends of user (new endpoint) serializer
+
+router.get('/profile', function (req, res, next) {
+    return getProfile(req.userID, res);
+});
+
+
+router.get('/profile/:id(\\d+)/', function (req, res, next) {
+    return getProfile(req.params.id, res);
+});
+
 
 module.exports = router;

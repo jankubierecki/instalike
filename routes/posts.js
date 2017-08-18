@@ -10,11 +10,11 @@ var validation = require('../clients/validations');
 
 // CREATE NEW POST
 
-router.post('/create', function (req, res, next) {
+router.post('/', function (req, res, next) {
     let title = req.body.title;
     let description = req.body.description;
     let fotoFile = req.files.fotoFile;
-    let author = req.userID;
+    let user = req.userID;
     let fileName = shortid.generate() + fotoFile.name;
 
     let validationErrors;
@@ -31,7 +31,7 @@ router.post('/create', function (req, res, next) {
 
     fotoFile.mv(path.join(postClient.fileUploadPath, fileName), function (err) {
         if (err) return res.sendStatus(500);
-        postClient.createPost(title, description, author, path.join('uploads/posts/', fileName), function () {
+        postClient.createPost(title, description, user, path.join('uploads/posts/', fileName), function () {
             return res.sendStatus(201);
         })
     });
@@ -40,12 +40,12 @@ router.post('/create', function (req, res, next) {
 
 //UPDATE POST
 
-router.put('/:id', function (req, res, next) {
+router.put('/:id(\\d+)/', function (req, res, next) {
     let postId = req.params.id;
     let user = req.userID;
     let title = req.body.title;
     let description = req.body.description;
-    let validationErrors = {title: [], description: [], author: []};
+    let validationErrors = {title: [], description: [], user: []};
     validationErrors.title.push(...validation.validateTitle(title, false));
     validationErrors.description.push(...validation.validateDescription(description, false));
 
@@ -60,9 +60,6 @@ router.put('/:id', function (req, res, next) {
         if (posts.length === 0) return res.sendStatus(404);
         let post = posts[0];
 
-        if (!(title === undefined || title === '')) post.title = title;
-        if (!(description === undefined || description === '')) post.description = description;
-
         if (post.userID === user) {
             postClient.updatePost(post, function () {
                 return res.json(serializer.serializePost(post));
@@ -70,12 +67,16 @@ router.put('/:id', function (req, res, next) {
         } else {
             return res.sendStatus(403);
         }
+
+        if (!(title === undefined || title === '')) post.title = title;
+        if (!(description === undefined || description === '')) post.description = description;
+
     });
 });
 
 //DELETE POST
 
-router.delete('/:id', function (req, res, next) {
+router.delete('/:id(\\d+)/', function (req, res, next) {
     let postId = req.params.id;
     let user = req.userID;
 
@@ -96,7 +97,7 @@ router.delete('/:id', function (req, res, next) {
 
 //GET SPECIFIC POST
 
-router.get('/get/:id', function (req, res, next) {
+router.get('/:id(\\d+)/', function (req, res, next) {
     let postId = req.params.id;
 
     postClient.getPost(postId, function (posts) {
@@ -123,7 +124,9 @@ router.get('/uploads/posts/:fileName', function (req, res, next) {
 
 //GET POST USERS
 
-router.get('/author/', function (req, res, next) {
+router.get('/user/:id(\\d+)', function (req, res, next) {
+    //todo validare if user exists
+
     let page = req.query.page === undefined ? 0 : req.query.page;
     let validationErrors = {page: []};
     validationErrors.page.push(...validation.validatePage(page));
@@ -132,10 +135,29 @@ router.get('/author/', function (req, res, next) {
         res.status(400);
         return res.json({"errors": validationErrors});
     }
-    postClient.getPostsForUsers([req.userID], page, function (posts) {
+    postClient.getPostsForUsers([req.params.id], page, function (posts) {
         return console.log(validationErrors) + res.json({"page": page, "posts": posts.map(serializer.serializePost)});
     })
 });
+
+
+router.get('/stream/', function (req, res, next) {
+    //todo validare if user exists
+
+    let page = req.query.page === undefined ? 0 : req.query.page;
+    let validationErrors = {page: []};
+    validationErrors.page.push(...validation.validatePage(page));
+
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors});
+    }
+    postClient.getPostFromFriends(req.userID, function (posts) {
+        return res.json(posts.map(serializer.serializePost));
+    })
+});
+
+
 
 
 module.exports = router;
