@@ -15,7 +15,7 @@ class PostClient {
             'SELECT posts.id, posts.userID, posts.title, posts.fotoPath, posts.description, posts.createdAt, users.email ' +
             'from posts INNER JOIN users ON posts.userID = users.id ' +
             'WHERE userID IN (SELECT friendID FROM friends WHERE userID = ?) OR userID = ? ' +
-            'ORDER BY `users`.`id` DESC';
+            'ORDER BY `users`.`id` DESC LIMIT ?,?;';
 
     }
 
@@ -59,15 +59,14 @@ class PostClient {
         mysqlPool.query(this.getPostCountSQL, [userID], function (err, rows, fields) {
             if (err) throw err;
             cb(rows[0].postCount);
-        })
+        });
     }
 
-    getPostFromFriends(userID, cb) {
-        mysqlPool.query(this.getPostFromFriendsSQL, [userID, userID], function (err, rows, fields) {
+    getPostFromFriends(userID, page, cb) {
+        mysqlPool.query(this.getPostFromFriendsSQL, [userID, userID, page * this.paginateBy, this.paginateBy], function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
-            //todo paginate limit
-        })
+        });
     }
 
     searchPost(queries, cb) {
@@ -84,8 +83,6 @@ class PostClient {
         }
 
         finalSQL += orderSQL;
-
-        console.log(finalSQL);
 
         mysqlPool.query(finalSQL, queries, function (err, rows, fields) {
             if (err) throw err;

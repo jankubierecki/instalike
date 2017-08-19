@@ -122,7 +122,7 @@ router.get('/uploads/posts/:fileName', function (req, res, next) {
 
 });
 
-//GET POST USERS
+//GET ALL USER POSTS
 
 router.get('/user/:id(\\d+)', function (req, res, next) {
     //todo validare if user exists
@@ -135,11 +135,13 @@ router.get('/user/:id(\\d+)', function (req, res, next) {
         res.status(400);
         return res.json({"errors": validationErrors});
     }
+
     postClient.getPostsForUsers([req.params.id], page, function (posts) {
-        return console.log(validationErrors) + res.json({"page": page, "posts": posts.map(serializer.serializePost)});
+        return res.json({"page": page, "posts": posts.map(serializer.serializePost)});
     })
 });
 
+//GET POSTS FROM USER'S FRIENDS
 
 router.get('/stream/', function (req, res, next) {
     //todo validare if user exists
@@ -152,10 +154,13 @@ router.get('/stream/', function (req, res, next) {
         res.status(400);
         return res.json({"errors": validationErrors});
     }
-    postClient.getPostFromFriends(req.userID, function (posts) {
-        return res.json(posts.map(serializer.serializePost));
+
+    postClient.getPostFromFriends(req.userID, page, function (posts) {
+        return res.json({"page": page, "posts": posts.map(serializer.serializePost)});
     })
 });
+
+//SEARCH POST
 
 router.get('/search/', function (req, res, next) {
     let queries = req.query.string.split(' ');
