@@ -11,7 +11,7 @@ var userClient = require('../clients/userClient');
 
 // CREATE NEW POST
 
-router.post('/', function (req, res, next) {
+router.post('/create/', function (req, res, next) {
     let title = req.body.title;
     let description = req.body.description;
     let fotoFile = req.files.fotoFile;
@@ -147,8 +147,6 @@ router.get('/user/:id(\\d+)', function (req, res, next) {
 //GET POSTS FROM USER'S FRIENDS
 
 router.get('/stream/', function (req, res, next) {
-    //todo validare if user exists
-
     let page = req.query.page === undefined ? 0 : req.query.page;
     let validationErrors = {page: []};
     validationErrors.page.push(...validation.validatePage(page));
@@ -167,7 +165,15 @@ router.get('/stream/', function (req, res, next) {
 
 router.get('/search/', function (req, res, next) {
     let queries = req.query.string.split(' ');
-    //todo validate ueries
+    let validationErrors = {query: []};
+    validationErrors.query.push(...validation.validateQueries(queries));
+
+
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors.query[0]});
+    }
+
     postClient.searchPost(queries, function (posts) {
         return res.json(posts.map(serializer.serializePost));
 

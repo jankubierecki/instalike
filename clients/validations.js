@@ -4,6 +4,12 @@ let router = express.Router();
 
 class Validators {
 
+    getErrorCount(validationErrors) {
+        return Object.keys(validationErrors).reduce(function (previous, current) {
+            return previous + validationErrors[current].length;
+        }, 0);
+    }
+
     validateEmail(email) {
         let errors = [];
 
@@ -64,12 +70,6 @@ class Validators {
         return errors;
     }
 
-    getErrorCount(validationErrors) {
-        return Object.keys(validationErrors).reduce(function (previous, current) {
-            return previous + validationErrors[current].length;
-        }, 0);
-    }
-
     validateTokenHeader(parameters) {
         let token = parameters.token;
         let errors = [];
@@ -81,6 +81,17 @@ class Validators {
         let errors = [];
         let reg = /^\d+$/;
         if (reg.test(page) === false) errors.push('input can only be a positive number');
+        return errors;
+    }
+
+    validateQueries(query) {
+        let errors = [];
+        let reg = /^[\w ]+$/;
+
+        query.forEach(function (val) {
+            if (reg.test(val) === false) errors.push('Wrong Input');
+        });
+
         return errors;
     }
 }
