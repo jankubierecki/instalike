@@ -6,6 +6,7 @@ var shortid = require('shortid');
 var fs = require('fs');
 var serializer = require('../serializer/serializer');
 var validation = require('../clients/validations');
+var userClient = require('../clients/userClient');
 
 
 // CREATE NEW POST
@@ -125,8 +126,7 @@ router.get('/uploads/posts/:fileName', function (req, res, next) {
 //GET ALL USER POSTS
 
 router.get('/user/:id(\\d+)', function (req, res, next) {
-    //todo validare if user exists
-
+    let user = req.params.id;
     let page = req.query.page === undefined ? 0 : req.query.page;
     let validationErrors = {page: []};
     validationErrors.page.push(...validation.validatePage(page));
@@ -136,9 +136,12 @@ router.get('/user/:id(\\d+)', function (req, res, next) {
         return res.json({"errors": validationErrors});
     }
 
-    postClient.getPostsForUsers([req.params.id], page, function (posts) {
-        return res.json({"page": page, "posts": posts.map(serializer.serializePost)});
-    })
+    postClient.getPostsForUsers(user, page, function (posts) {
+        userClient.getUserByID(user, function (users) {
+            if (users.length === 0) return res.sendStatus(404);
+            return res.json({"page": page, "posts": posts.map(serializer.serializePost)});
+        });
+    });
 });
 
 //GET POSTS FROM USER'S FRIENDS
@@ -172,5 +175,6 @@ router.get('/search/', function (req, res, next) {
 });
 
 
-
 module.exports = router;
+
+
