@@ -14,6 +14,7 @@ class UserClient {
         this.createUserFriendSQL = 'INSERT INTO `friends` (`id`, `userID`, `friendID`) VALUES (NULL, ?, ?);';
         this.getUserByIDSQL = 'SELECT * FROM `users` WHERE id = ? ;';
         this.searchUserSQL = "SELECT id, email FROM `users` HAVING LEFT(email, LOCATE('@', email) - 1) LIKE CONCAT('%', ?, '%')";
+        this.deleteUserFriendSQL = 'DELETE FROM `friends` WHERE userID = ? AND friendID = ?';
 
 
     }
@@ -26,7 +27,7 @@ class UserClient {
     }
 
     createUser(email, password, cb) {
-        let passwordHashed = passwordHash.generate(password)
+        let passwordHashed = passwordHash.generate(password);
         mysqlPool.query(this.createUserSQL, [email, passwordHashed], function (err, fields) {
             if (err) throw err;
             cb();
@@ -62,7 +63,14 @@ class UserClient {
         mysqlPool.query(this.searchUserSQL, [string], function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
-        })
+        });
+    }
+
+    deleteUserFriend(userID, friendID, cb) {
+        mysqlPool.query(this.deleteUserFriendSQL, [userID, friendID], function (err, fields) {
+            if (err) throw err;
+            cb();
+        });
     }
 }
 

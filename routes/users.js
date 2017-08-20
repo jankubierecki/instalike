@@ -81,11 +81,18 @@ router.post('/friends', function (req, res, next) {
 });
 
 
-// todo delete friend (new route)
+router.post('/delete', function (req, res, next) {
+    let userID = req.userID;
+    let friendID = req.body.friendID;
+
+    userClient.deleteUserFriend(userID, friendID, function () {
+        return res.sendStatus(200);
+    });
+});
 
 
 var getProfile = function (userID, res) {
-    let profile = {user: {}, posts: [], postCount: 0, friendsCount: 0, userFollowersCount: 0}
+    let profile = {user: {}, posts: [], postCount: 0, friendsCount: 0, userFollowersCount: 0};
 //todo add another two counts ( friendscount and userfollowerscount)
     userClient.getUserByID(userID, function (users) {
         if (users.length !== 1) return res.sendStatus(404);
