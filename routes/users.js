@@ -74,7 +74,6 @@ router.post('/login', function (req, res, next) {
 router.post('/friends', function (req, res, next) {
     let friend = req.body.friendID;
     let user = req.userID;
-
     let validationErrors = {friendID: []};
     validationErrors.friendID.push(...validation.validateFriendID(friend));
 
@@ -84,25 +83,23 @@ router.post('/friends', function (req, res, next) {
     }
 
     //if friend is user
-    if (parseInt(friend) === user) return res.sendStatus(404);
+    if (parseInt(friend) === user) return res.sendStatus(403);
 
     //if friend does not exist
     userClient.getUserByID(friend, function (users) {
         if (users.length === 0) return res.sendStatus(404);
-
     });
 
-    //if friend is already user's friend
-    userClient.getFriends(user, function (friends) {
-        var message;
-        friends.filter(val => {
-            if (val === friend) message = false;
-            return message;
-        });
-
-        if (!message) return res.sendStatus(400);
-    });
-
+    /*  //if friend is already user's friend
+      userClient.getFriends(user, function (friends) {
+          var message;
+          friends.filter(val => {
+              if (val === friend) message = false;
+              return message;
+          });
+          if (!message) return res.sendStatus(400);
+      });
+  */
     //if everything is ok, create friend
     userClient.createUserFriend(user, friend, function () {
         return res.sendStatus(201);
@@ -112,10 +109,31 @@ router.post('/friends', function (req, res, next) {
 //DELETE FRIEND
 
 router.post('/delete', function (req, res, next) {
-    let userID = req.userID;
-    let friendID = req.body.friendID;
+    let user = req.userID;
+    let friend = req.body.friendID;
+    let validationErrors = {friendID: []};
+    validationErrors.friendID.push(...validation.validateFriendID(friend));
 
-    userClient.deleteUserFriend(userID, friendID, function () {
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors.friendID[0]});
+    }
+
+    //if friend is user
+    if (parseInt(friend) === user) return res.sendStatus(403);
+
+    //if friend does not exist
+    userClient.getUserByID(friend, function (users) {
+        if (users.length === 0) return res.sendStatus(404);
+    });
+
+    /* //if friend is already deleted(if friend is not user's friend)
+     userClient.getFriends(user, function (friends) {
+         if(friends.indexOf(friend) < 1) res.sendStatus(404);
+     });
+ */
+    //if everything is ok, delete friend
+    userClient.deleteUserFriend(user, friend, function () {
         return res.sendStatus(200);
     });
 });
