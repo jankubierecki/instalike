@@ -94,6 +94,13 @@ class Validators {
 
         return errors;
     }
+
+    validateFriendID(friendID) {
+        let errors = [];
+        let reg = /^([1-9][0-9]{0,8})$/;
+        if (reg.test(friendID) === false) errors.push('Wrong Input');
+        return errors;
+    }
 }
 
 module.exports = new Validators();

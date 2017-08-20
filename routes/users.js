@@ -69,17 +69,47 @@ router.post('/login', function (req, res, next) {
 
 });
 
+//CREATE FRIEND
 
 router.post('/friends', function (req, res, next) {
-    let friendID = req.body.friendID;
-    let userID = req.userID;
+    let friend = req.body.friendID;
+    let user = req.userID;
 
-    //todo validate if is is friendID AND if the friend exists AND is not already a friend and you cannot be friend with yourself
-    userClient.createUserFriend(userID, friendID, function () {
+    let validationErrors = {friendID: []};
+    validationErrors.friendID.push(...validation.validateFriendID(friend));
+
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors.friendID[0]});
+    }
+
+    //if friend is user
+    if (parseInt(friend) === user) return res.sendStatus(404);
+
+    //if friend does not exist
+    userClient.getUserByID(friend, function (users) {
+        if (users.length === 0) return res.sendStatus(404);
+
+    });
+
+    //if friend is already user's friend
+    userClient.getFriends(user, function (friends) {
+        var message;
+        friends.filter(val => {
+            if (val === friend) message = false;
+            return message;
+        });
+
+        if (!message) return res.sendStatus(400);
+    });
+
+    //if everything is ok, create friend
+    userClient.createUserFriend(user, friend, function () {
         return res.sendStatus(201);
     });
 });
 
+//DELETE FRIEND
 
 router.post('/delete', function (req, res, next) {
     let userID = req.userID;
