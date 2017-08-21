@@ -4,6 +4,7 @@ var passwordHash = require('password-hash');
 
 class UserClient {
     constructor() {
+        this.paginateBy = 10;
         this.getUserByEmailSQL = 'SELECT * FROM `users` WHERE email = ? ;';
         this.createUserSQL = 'INSERT INTO `users`(`id`, `email`, `password`) VALUES (NULL, ?, ?);';
         this.getFriendsSQL =
@@ -13,7 +14,7 @@ class UserClient {
             'WHERE f.userID = ?;';
         this.createUserFriendSQL = 'INSERT INTO `friends` (`id`, `userID`, `friendID`) VALUES (NULL, ?, ?);';
         this.getUserByIDSQL = 'SELECT * FROM `users` WHERE id = ? ;';
-        this.searchUserSQL = "SELECT id, email FROM `users` HAVING LEFT(email, LOCATE('@', email) - 1) LIKE CONCAT('%', ?, '%')";
+        this.searchUserSQL = "SELECT id, email FROM `users` HAVING LEFT(email, LOCATE('@', email) - 1) LIKE CONCAT('%', ?, '%') ORDER BY `users`.`id` DESC LIMIT ?,?;";
         this.deleteUserFriendSQL = 'DELETE FROM `friends` WHERE userID = ? AND friendID = ?';
         this.getFriendsCountSQL = 'SELECT COUNT(*) AS friendsCount FROM `friends` WHERE `userID` = ?;';
         this.getUserFollowersCountSQL = "SELECT COUNT(*) as userFollowersCount FROM friends WHERE friendID = ?;";
@@ -60,8 +61,8 @@ class UserClient {
         });
     }
 
-    searchUser(string, cb) {
-        mysqlPool.query(this.searchUserSQL, [string], function (err, rows, fields) {
+    searchUser(string, page, cb) {
+        mysqlPool.query(this.searchUserSQL, [string, page * this.paginateBy, this.paginateBy], function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
         });

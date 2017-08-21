@@ -178,11 +178,20 @@ router.get('/friendsList', function (req, res, next) {
 
 router.get('/search', function (req, res, next) {
     let string = req.query.string;
-    //todo validate if string is correct add pagination while searching for user
+    let page = req.query.page === undefined ? 0 : req.query.page;
 
-    userClient.searchUser(string, function (posts) {
-        return res.json(posts.map(serializer.serializeUser));
+    let validationErrors = {string: [], page: []};
+    validationErrors.string.push(...validation.validateQueryString(string));
+    validationErrors.page.push(...validation.validatePage(page));
 
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors.string[0]});
+    }
+
+    userClient.searchUser(string, page, function (users) {
+        if (users.length === 0) return res.sendStatus(404);
+        return res.json({"page": page, "users": users.map(serializer.serializeUser)});
     });
 
 });

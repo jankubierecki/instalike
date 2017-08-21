@@ -101,6 +101,17 @@ class Validators {
         if (reg.test(friendID) === false) errors.push('Wrong Input');
         return errors;
     }
+
+
+    validateQueryString(string) {
+        let errors = [];
+        let reg = /^[\w ]+$/;
+
+        if (reg.test(string) === false) errors.push('Wrong Input');
+
+        return errors;
+    }
 }
+
 
 module.exports = new Validators();
