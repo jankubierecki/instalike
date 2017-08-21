@@ -7,17 +7,18 @@ class UserClient {
         this.paginateBy = 10;
         this.getUserByEmailSQL = 'SELECT * FROM `users` WHERE email = ? ;';
         this.createUserSQL = 'INSERT INTO `users`(`id`, `email`, `password`) VALUES (NULL, ?, ?);';
-        this.getFriendsSQL =
-            'SELECT f.id, u.id AS friendID, u.email AS friendEmail ' +
-            'FROM friends AS f ' +
-            'INNER JOIN users AS u ON f.friendID = u.id ' +
-            'WHERE f.userID = ?;';
         this.createUserFriendSQL = 'INSERT INTO `friends` (`id`, `userID`, `friendID`) VALUES (NULL, ?, ?);';
         this.getUserByIDSQL = 'SELECT * FROM `users` WHERE id = ? ;';
         this.searchUserSQL = "SELECT id, email FROM `users` HAVING LEFT(email, LOCATE('@', email) - 1) LIKE CONCAT('%', ?, '%') ORDER BY `users`.`id` DESC LIMIT ?,?;";
         this.deleteUserFriendSQL = 'DELETE FROM `friends` WHERE userID = ? AND friendID = ?';
         this.getFriendsCountSQL = 'SELECT COUNT(*) AS friendsCount FROM `friends` WHERE `userID` = ?;';
         this.getUserFollowersCountSQL = "SELECT COUNT(*) as userFollowersCount FROM friends WHERE friendID = ?;";
+        this.hasFriendSQL = "SELECT EXISTS (SELECT * FROM friends WHERE userID = ? AND friendID = ?) AS hasFriend;";
+        this.getFriendsSQL =
+            'SELECT f.id, u.id AS friendID, u.email AS friendEmail ' +
+            'FROM friends AS f ' +
+            'INNER JOIN users AS u ON f.friendID = u.id ' +
+            'WHERE f.userID = ?;';
 
     }
 
@@ -83,9 +84,16 @@ class UserClient {
     }
 
     getUserFollowersCount(userID, cb) {
-        mysqlPool.query(this.getUserFollowersCountSQL, [friendID], function (err, rows, fields) {
+        mysqlPool.query(this.getUserFollowersCountSQL, [userID], function (err, rows, fields) {
             if (err) throw err;
             cb(rows[0].userFollowersCount);
+        })
+    }
+
+    hasFriend(userID, friendID, cb) {
+        mysqlPool.query(this.hasFriendSQL, [userID, friendID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(Boolean(rows[0].hasFriend));
         })
     }
 }

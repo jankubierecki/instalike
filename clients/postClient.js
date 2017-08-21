@@ -6,16 +6,23 @@ class PostClient {
         this.paginateBy = 10;
         this.fileUploadPath = path.join(path.dirname(path.dirname(require.main.filename)), '/uploads/posts/');
         this.createPostSQL = 'INSERT INTO `posts`( `userID`, `title`, `description`, `fotoPath`) VALUES (?, ?, ?, ?);';
-        this.getPostsForUsersSQL = 'SELECT * FROM `posts` WHERE `userID` IN (?) ORDER BY `createdAt` DESC LIMIT ?,?;';
+        this.getPostsForUsersSQL = 'SELECT posts.*, COUNT(comments.id) AS commentsCount  FROM `posts` ' +
+            'LEFT JOIN comments ON posts.id = comments.postID ' +
+            'WHERE posts.`userID` IN (?) ' +
+            'GROUP BY posts.id ' +
+            'ORDER BY `createdAt` DESC LIMIT ?,?;';
         this.updatePostSQL = 'UPDATE `posts` SET `title`= ?, `description`= ? WHERE id = ?;';
         this.deletePostSQL = 'DELETE FROM `posts` WHERE `id` = ?;';
         this.getPostSQL = 'SELECT * FROM `posts` WHERE `id` = ?;';
         this.getPostCountSQL = 'SELECT COUNT(*) AS postCount FROM `posts` WHERE `userID` = ?;';
         this.getPostFromFriendsSQL =
-            'SELECT posts.id, posts.userID, posts.title, posts.fotoPath, posts.description, posts.createdAt, users.email ' +
-            'from posts INNER JOIN users ON posts.userID = users.id ' +
-            'WHERE userID IN (SELECT friendID FROM friends WHERE userID = ?) OR userID = ? ' +
-            'ORDER BY `users`.`id` DESC LIMIT ?,?;';
+            'SELECT posts.id, posts.userID, posts.title, posts.fotoPath, posts.description, posts.createdAt, users.email, COUNT(comments.id) AS commentsCount ' +
+            'FROM posts ' +
+            'INNER JOIN users ON posts.userID = users.id ' +
+            'LEFT JOIN comments ON posts.id = comments.postID ' +
+            'WHERE posts.userID IN (SELECT friendID FROM friends WHERE userID = ?) OR posts.userID = ? ' +
+            'GROUP BY posts.id ' +
+            'ORDER BY posts.createdAt DESC LIMIT ?,?'
 
     }
 

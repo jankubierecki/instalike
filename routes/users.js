@@ -72,61 +72,71 @@ router.post('/login', function (req, res, next) {
 //CREATE FRIEND
 
 router.post('/friends', function (req, res, next) {
-    let friend = req.body.friendID;
-    let user = req.userID;
+    let friendID = req.body.friendID;
+    let userID = req.userID;
     let validationErrors = {friendID: []};
-    validationErrors.friendID.push(...validation.validateFriendID(friend));
+    validationErrors.friendID.push(...validation.validateUserID(friendID));
 
     if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
-        return res.json({"errors": validationErrors.friendID[0]});
+        return res.json({"errors": validationErrors});
     }
 
     //if friend is user
-    if (parseInt(friend) === user) return res.sendStatus(403);
+    if (parseInt(friendID) === userID) return res.sendStatus(403);
 
     //if friend does not exist
-    userClient.getUserByID(friend, function (users) {
+    userClient.getUserByID(friendID, function (users) {
         if (users.length === 0) return res.sendStatus(404);
+        userClient.hasFriend(userID, friendID, function (hasFriend) {
+            if (!hasFriend) {
+                //if everything is ok, create friend
+                userClient.createUserFriend(userID, friendID, function () {
+                    return res.sendStatus(201);
+                });
+            }
+            else return res.sendStatus(200);
+
+        })
+
     });
 
-    //if everything is ok, create friend
-    userClient.createUserFriend(user, friend, function () {
-        return res.sendStatus(201);
-    });
+
 });
 
 //DELETE FRIEND
 
 router.post('/delete', function (req, res, next) {
-    let user = req.userID;
-    let friend = req.body.friendID;
+    let userID = req.userID;
+    let friendID = req.body.friendID;
     let validationErrors = {friendID: []};
-    validationErrors.friendID.push(...validation.validateFriendID(friend));
+    validationErrors.friendID.push(...validation.validateUserID(friendID));
 
     if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
-        return res.json({"errors": validationErrors.friendID[0]});
+        return res.json({"errors": validationErrors});
     }
 
     //if friend is user
-    if (parseInt(friend) === user) return res.sendStatus(403);
+    if (parseInt(friendID) === userID) return res.sendStatus(403);
 
     //if friend does not exist
-    userClient.getUserByID(friend, function (users) {
+    userClient.getUserByID(friendID, function (users) {
         if (users.length === 0) return res.sendStatus(404);
+
+        //if everything is ok, delete friend
+        userClient.deleteUserFriend(userID, friendID, function () {
+            return res.sendStatus(200);
+        });
     });
 
-    //if everything is ok, delete friend
-    userClient.deleteUserFriend(user, friend, function () {
-        return res.sendStatus(200);
-    });
+
 });
 
 //GET PROFILE
 
-var getProfile = function (userID, res) {
-    let profile = {user: {}, posts: [], postCount: 0, friendsCount: 0, userFollowersCount: 0};
+let getProfile = function (userID, res) {
+    let profile = {user: {}, posts: undefined, postCount: -1, friendsCount: -1, userFollowersCount: -1};
 
     userClient.getUserByID(userID, function (users) {
         if (users.length !== 1) return res.sendStatus(404);
@@ -135,22 +145,32 @@ var getProfile = function (userID, res) {
 
         postClient.getPostCount(userID, function (postCount) {
             profile.postCount = postCount;
+            response();
         });
 
         userClient.getFriendsCount(userID, function (friendsCount) {
             profile.friendsCount = friendsCount;
+            response();
         });
 
         userClient.getUserFollowersCount(userID, function (followers) {
             profile.userFollowersCount = followers;
+            response();
         });
 
         postClient.getPostsForUsers([userID], 0, function (posts) {
             profile.posts = posts.map(serializer.serializePost);
-            return res.json(profile);
+            response();
         });
 
     });
+
+    function response() {
+        if (profile.postCount !== -1
+            && profile.friendsCount !== -1
+            && profile.userFollowersCount !== -1
+            && profile.posts !== undefined) return res.json(profile);
+    }
 
 };
 

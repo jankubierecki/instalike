@@ -7,6 +7,7 @@ var fs = require('fs');
 var serializer = require('../serializer/serializer');
 var validation = require('../clients/validations');
 var userClient = require('../clients/userClient');
+var commentsClient = require('../clients/commentsClient');
 
 
 // CREATE NEW POST
@@ -103,8 +104,11 @@ router.get('/:id(\\d+)/', function (req, res, next) {
 
     postClient.getPost(postId, function (posts) {
         if (posts.length === 0) return res.sendStatus(404);
-        let post = posts[0];
-        return res.json(serializer.serializePost(post));
+        let post = serializer.serializePost(posts[0]);
+        commentsClient.getComments(post.id, function (comments) {
+            post.comments = comments.map(serializer.serializeComment);
+            return res.json(post);
+        })
     })
 });
 
@@ -179,6 +183,33 @@ router.get('/search/', function (req, res, next) {
 
     });
 });
+
+
+router.post('/:postID(\\d+)/comments', function (req, res, next) {
+    let postID = req.params.postID;
+    let userID = req.userID;
+    let description = req.body.description;
+
+    let validationErrors = {description: []};
+    validationErrors.description.push(...validation.validateDescription(description));
+
+
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors});
+    }
+
+    postClient.getPost(postID, function (posts) {
+        if (posts.length !== 1) return res.sendStatus(404);
+
+        commentsClient.createComment(userID, postID, description, function () {
+            return res.sendStatus(201);
+        });
+    })
+
+});
+
+//todo delete and update posts (2 min limit)
 
 
 module.exports = router;
