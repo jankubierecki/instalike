@@ -22,15 +22,19 @@ class Serializer {
     }
 
     serializeComment(comment) {
-        return {
+        let serializedComment = {
             "id": comment.id,
             "email": comment.email,
             "authorID": comment.userID,
             "title": comment.title,
             "description": comment.description,
-            "createdAt": comment.createdAt,
+            "createdAt": comment.createdAt
+        };
 
+        if (comment.responsePostID !== null) {
+            serializedComment["responsePostID"] = comment.responsePostID
         }
+        return serializedComment;
     }
 }
 

@@ -189,6 +189,7 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
     let postID = req.params.postID;
     let userID = req.userID;
     let description = req.body.description;
+    let responsePostID = req.body.responsePostID;
 
     let validationErrors = {description: []};
     validationErrors.description.push(...validation.validateDescription(description));
@@ -201,16 +202,25 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
 
     postClient.getPost(postID, function (posts) {
         if (posts.length !== 1) return res.sendStatus(404);
+//todo validate if responsepostid is int
+        if (responsePostID !== undefined) {
+            postClient.getPost(responsePostID, function (responsePosts) {
+                if (responsePosts.length !== 1) return res.sendStatus(404);
 
-        commentsClient.createComment(userID, postID, description, function () {
-            return res.sendStatus(201);
-        });
-    })
-
+                commentsClient.createComment(userID, postID, description, responsePostID, function () {
+                    return res.sendStatus(201);
+                });
+            });
+        } else {
+            commentsClient.createComment(userID, postID, description, responsePostID, function () {
+                return res.sendStatus(201);
+            });
+        }
+    });
 });
 
-//todo delete and update posts (2 min limit)
 
+//todo delete and update posts (2 min limit)
 
 module.exports = router;
 
