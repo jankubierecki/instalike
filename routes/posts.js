@@ -171,7 +171,7 @@ router.get('/search/', function (req, res, next) {
 
     if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
-        return res.json({"errors": validationErrors.query[0]});
+        return res.json({"errors": validationErrors});
     }
 
     postClient.searchPost(queries, function (posts) {

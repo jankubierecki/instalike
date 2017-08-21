@@ -87,10 +87,12 @@ class Validators {
     validateQueries(query) {
         let errors = [];
         let reg = /^[\w ]+$/;
-
-        query.forEach(function (val) {
-            if (reg.test(val) === false) errors.push('Wrong Input');
-        });
+        for (let i = 0; i < query.length; i++) {
+            if (reg.test(query[i]) === false) {
+                errors.push('Wrong Input');
+                break;
+            }
+        }
 
         return errors;
     }
