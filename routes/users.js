@@ -123,6 +123,7 @@ router.post('/delete', function (req, res, next) {
     });
 });
 
+//GET PROFILE
 
 var getProfile = function (userID, res) {
     let profile = {user: {}, posts: [], postCount: 0, friendsCount: 0, userFollowersCount: 0};
@@ -151,10 +152,8 @@ var getProfile = function (userID, res) {
 
     });
 
-
 };
 
-//todo add list friends of user (new endpoint) serializer
 
 router.get('/profile', function (req, res, next) {
     return getProfile(req.userID, res);
@@ -165,8 +164,18 @@ router.get('/profile/:id(\\d+)/', function (req, res, next) {
     return getProfile(req.params.id, res);
 });
 
+//GET FRIENDS LIST FOR USER
+
+router.get('/friendsList', function (req, res, next) {
+    let user = req.userID;
+
+    userClient.getFriends(user, function (friends) {
+        return res.json(friends.map(serializer.serializeUser));
+    });
+});
 
 //SEARCH USER
+
 router.get('/search', function (req, res, next) {
     let string = req.query.string;
     //todo validate if string is correct add pagination while searching for user
