@@ -15,7 +15,8 @@ class UserClient {
         this.getUserByIDSQL = 'SELECT * FROM `users` WHERE id = ? ;';
         this.searchUserSQL = "SELECT id, email FROM `users` HAVING LEFT(email, LOCATE('@', email) - 1) LIKE CONCAT('%', ?, '%')";
         this.deleteUserFriendSQL = 'DELETE FROM `friends` WHERE userID = ? AND friendID = ?';
-
+        this.getFriendsCountSQL = 'SELECT COUNT(*) AS friendsCount FROM `friends` WHERE `userID` = ?;';
+        this.getUserFollowersCountSQL = "SELECT COUNT(*) as userFollowersCount FROM friends WHERE friendID = ?;";
 
     }
 
@@ -71,6 +72,20 @@ class UserClient {
             if (err) throw err;
             cb();
         });
+    }
+
+    getFriendsCount(userID, cb) {
+        mysqlPool.query(this.getFriendsCountSQL, [userID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows[0].friendsCount);
+        })
+    }
+
+    getUserFollowersCount(userID, cb) {
+        mysqlPool.query(this.getUserFollowersCountSQL, [friendID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows[0].userFollowersCount);
+        })
     }
 }
 

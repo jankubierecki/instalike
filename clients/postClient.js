@@ -81,14 +81,11 @@ class PostClient {
                 finalSQL += ' AND' + likeSQL;
             }
         }
-
         finalSQL += orderSQL;
-
         mysqlPool.query(finalSQL, queries, function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
-        })
-
+        });
     }
 
 }

@@ -90,16 +90,6 @@ router.post('/friends', function (req, res, next) {
         if (users.length === 0) return res.sendStatus(404);
     });
 
-    /*  //if friend is already user's friend
-      userClient.getFriends(user, function (friends) {
-          var message;
-          friends.filter(val => {
-              if (val === friend) message = false;
-              return message;
-          });
-          if (!message) return res.sendStatus(400);
-      });
-  */
     //if everything is ok, create friend
     userClient.createUserFriend(user, friend, function () {
         return res.sendStatus(201);
@@ -127,11 +117,6 @@ router.post('/delete', function (req, res, next) {
         if (users.length === 0) return res.sendStatus(404);
     });
 
-    /* //if friend is already deleted(if friend is not user's friend)
-     userClient.getFriends(user, function (friends) {
-         if(friends.indexOf(friend) < 1) res.sendStatus(404);
-     });
- */
     //if everything is ok, delete friend
     userClient.deleteUserFriend(user, friend, function () {
         return res.sendStatus(200);
@@ -141,7 +126,7 @@ router.post('/delete', function (req, res, next) {
 
 var getProfile = function (userID, res) {
     let profile = {user: {}, posts: [], postCount: 0, friendsCount: 0, userFollowersCount: 0};
-//todo add another two counts ( friendscount and userfollowerscount)
+
     userClient.getUserByID(userID, function (users) {
         if (users.length !== 1) return res.sendStatus(404);
         let user = users[0];
@@ -149,13 +134,21 @@ var getProfile = function (userID, res) {
 
         postClient.getPostCount(userID, function (postCount) {
             profile.postCount = postCount;
+        });
 
-            postClient.getPostsForUsers([userID], 0, function (posts) {
-                profile.posts = posts.map(serializer.serializePost);
-                return res.json(profile);
-            });
+        userClient.getFriendsCount(userID, function (friendsCount) {
+            profile.friendsCount = friendsCount;
+        });
 
-        })
+        userClient.getUserFollowersCount(userID, function (followers) {
+            profile.userFollowersCount = followers;
+        });
+
+        postClient.getPostsForUsers([userID], 0, function (posts) {
+            profile.posts = posts.map(serializer.serializePost);
+            return res.json(profile);
+        });
+
     });
 
 
