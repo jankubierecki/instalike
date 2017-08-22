@@ -184,6 +184,7 @@ router.get('/search/', function (req, res, next) {
     });
 });
 
+//CREATE COMMENT
 
 router.post('/:postID(\\d+)/comments', function (req, res, next) {
     let postID = req.params.postID;
@@ -191,9 +192,8 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
     let description = req.body.description;
     let responsePostID = req.body.responsePostID;
 
-    let validationErrors = {description: []};
+    let validationErrors = {description: [], responsePostID: []};
     validationErrors.description.push(...validation.validateDescription(description));
-
 
     if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
@@ -202,17 +202,25 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
 
     postClient.getPost(postID, function (posts) {
         if (posts.length !== 1) return res.sendStatus(404);
-//todo validate if responsepostid is int
+
         if (responsePostID !== undefined) {
             postClient.getPost(responsePostID, function (responsePosts) {
+
+                validationErrors.responsePostID.push(...validation.validateResponseID(responsePostID));
+
+                if (validation.getErrorCount(validationErrors.responsePostID) !== 0) {
+                    res.status(400);
+                    return res.json({"errors": validationErrors});
+                }
+
                 if (responsePosts.length !== 1) return res.sendStatus(404);
 
-                commentsClient.createComment(userID, postID, description, responsePostID, function () {
+                commentsClient.createComment(userID, postID, responsePostID, description, function () {
                     return res.sendStatus(201);
                 });
             });
         } else {
-            commentsClient.createComment(userID, postID, description, responsePostID, function () {
+            commentsClient.createComment(userID, postID, responsePostID, description, function () {
                 return res.sendStatus(201);
             });
         }

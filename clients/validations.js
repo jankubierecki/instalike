@@ -100,6 +100,7 @@ class Validators {
     validateUserID(friendID) {
         let errors = [];
         let reg = /^(\d+)$/;
+
         if (reg.test(friendID) === false || friendID > 2147483647) errors.push('Wrong Input');
         return errors;
     }
@@ -112,6 +113,16 @@ class Validators {
         if (reg.test(string) === false) errors.push('Wrong Input');
 
         return errors;
+    }
+
+    validateResponseID(responseID) {
+        let errors = []
+        let reg = /^\+?(0|[1-9]\d*)$/;
+
+        if (!reg.test(responseID) || responseID > 2147483647) errors.push('Wrong Input');
+
+        return errors;
+
     }
 }
 

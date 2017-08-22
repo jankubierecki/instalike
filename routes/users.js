@@ -174,7 +174,6 @@ let getProfile = function (userID, res) {
 
 };
 
-
 router.get('/profile', function (req, res, next) {
     return getProfile(req.userID, res);
 });
