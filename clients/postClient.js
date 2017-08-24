@@ -22,7 +22,8 @@ class PostClient {
             'LEFT JOIN comments ON posts.id = comments.postID ' +
             'WHERE posts.userID IN (SELECT friendID FROM friends WHERE userID = ?) OR posts.userID = ? ' +
             'GROUP BY posts.id ' +
-            'ORDER BY posts.createdAt DESC LIMIT ?,?'
+            'ORDER BY posts.createdAt DESC LIMIT ?,?';
+        this.isLatherThanSQL = "SELECT * FROM  comments WHERE createdAt >= (NOW() - INTERVAL 2 MINUTE);";
 
     }
 
@@ -90,6 +91,13 @@ class PostClient {
         }
         finalSQL += orderSQL;
         mysqlPool.query(finalSQL, queries, function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows);
+        });
+    }
+
+    isOlderThan(cb) {
+        mysqlPool.query(this.isLatherThanSQL, function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
         });

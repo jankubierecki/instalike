@@ -115,14 +115,17 @@ class Validators {
         return errors;
     }
 
-    validateResponseID(responseID) {
+    validateResponseID(responseID, isRequired = true) {
         let errors = []
         let reg = /^\+?(0|[1-9]\d*)$/;
 
-        if (!reg.test(responseID) || responseID > 2147483647) errors.push('Wrong Input');
+        if (isRequired) {
+            if (!reg.test(responseID) || responseID > 2147483647) errors.push('Wrong Input');
+        }
+
+        if (responseID !== undefined && (!reg.test(responseID) || responseID > 2147483647)) errors.push('Wrong Input');
 
         return errors;
-
     }
 }
 

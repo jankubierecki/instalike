@@ -42,7 +42,7 @@ router.post('/create/', function (req, res, next) {
 
 //UPDATE POST
 
-router.put('/:id(\\d+)/', function (req, res, next) {
+router.put('/update/:id(\\d+)/', function (req, res, next) {
     let postId = req.params.id;
     let user = req.userID;
     let title = req.body.title;
@@ -63,6 +63,9 @@ router.put('/:id(\\d+)/', function (req, res, next) {
         let post = posts[0];
 
         if (post.userID === user) {
+            if (!(title === undefined || title === '')) post.title = title;
+            if (!(description === undefined || description === '')) post.description = description;
+
             postClient.updatePost(post, function () {
                 return res.json(serializer.serializePost(post));
             });
@@ -70,15 +73,12 @@ router.put('/:id(\\d+)/', function (req, res, next) {
             return res.sendStatus(403);
         }
 
-        if (!(title === undefined || title === '')) post.title = title;
-        if (!(description === undefined || description === '')) post.description = description;
-
     });
 });
 
 //DELETE POST
 
-router.delete('/:id(\\d+)/', function (req, res, next) {
+router.delete('/delete/:id(\\d+)/', function (req, res, next) {
     let postId = req.params.id;
     let user = req.userID;
 
@@ -194,6 +194,7 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
 
     let validationErrors = {description: [], responsePostID: []};
     validationErrors.description.push(...validation.validateDescription(description));
+    validationErrors.responsePostID.push(...validation.validateResponseID(responsePostID, false));
 
     if (validation.getErrorCount(validationErrors) !== 0) {
         res.status(400);
@@ -202,16 +203,8 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
 
     postClient.getPost(postID, function (posts) {
         if (posts.length !== 1) return res.sendStatus(404);
-
         if (responsePostID !== undefined) {
             postClient.getPost(responsePostID, function (responsePosts) {
-
-                validationErrors.responsePostID.push(...validation.validateResponseID(responsePostID));
-
-                if (validation.getErrorCount(validationErrors.responsePostID) !== 0) {
-                    res.status(400);
-                    return res.json({"errors": validationErrors});
-                }
 
                 if (responsePosts.length !== 1) return res.sendStatus(404);
 
@@ -227,9 +220,79 @@ router.post('/:postID(\\d+)/comments', function (req, res, next) {
     });
 });
 
+//UPDATE COMMENT
 
-//todo delete and update posts (2 min limit)
+router.put('/comments/:id(\\d+)/update', function (req, res, next) {
+    let commentID = req.params.id;
+    let user = req.userID;
+    let description = req.body.description;
+    let responsePostID = req.body.responsePostID;
+
+    let validationErrors = {description: [], responsePostID: []};
+    validationErrors.description.push(...validation.validateDescription(description, false));
+    validationErrors.responsePostID.push(...validation.validateResponseID(responsePostID, false));
+
+    if (validation.getErrorCount(validationErrors) !== 0) {
+        res.status(400);
+        return res.json({"errors": validationErrors});
+    }
+    //get comment you want to update
+    commentsClient.getSpecificComment(commentID, function (comments) {
+        //check if comment exists
+        if (comments.length === 0) return res.sendStatus(404);
+        let comment = comments[0];
+        //check if comment was created LESS than 2 mins ago
+        postClient.isOlderThan(function (comments) {
+            let arr = comments.map(val => {
+                return val.id;
+            });
+            //if comment was created LESS than 2 mins ago, you can update it
+            if (arr.filter(val => {
+                    return val === parseInt(commentID)
+                }).length !== 0) {
+                //check if user is author of the comment
+                if (comment.userID === user) {
+
+                    if (!(responsePostID === undefined || responsePostID === '')) comment.responsePostID = responsePostID;
+                    if (!(description === undefined || description === '')) comment.description = description;
+
+                    commentsClient.updateComment(comment, function () {
+                        return res.json(serializer.serializeComment(comment));
+                    });
+                } else {
+                    return res.sendStatus(403);
+                }
+            } else {
+                return res.sendStatus(403);
+            }
+        });
+    });
+});
+
+
+//DELETE COMMENT
+
+router.delete('/comments/delete/:id(\\d+)/', function (req, res, next) {
+    let commentID = req.params.id;
+    let user = req.userID;
+
+    commentsClient.getSpecificComment(commentID, function (comments) {
+        if (comments.length === 0) return res.sendStatus(404);
+        let comment = comments[0];
+
+        if (comment.userID === user) {
+            commentsClient.deleteComment(commentID, function () {
+                return res.sendStatus(200);
+            });
+        } else {
+            return res.sendStatus(403);
+        }
+    });
+});
+
 
 module.exports = router;
+
+
 
 
