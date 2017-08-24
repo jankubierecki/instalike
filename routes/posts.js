@@ -101,14 +101,16 @@ router.delete('/delete/:id(\\d+)/', function (req, res, next) {
 
 router.get('/:id(\\d+)/', function (req, res, next) {
     let postId = req.params.id;
+    let page = req.query.page === undefined ? 0 : req.query.page;
 
     postClient.getPost(postId, function (posts) {
         if (posts.length === 0) return res.sendStatus(404);
         let post = serializer.serializePost(posts[0]);
-        commentsClient.getComments(post.id, function (comments) {
+
+        commentsClient.getComments(post.id, page, function (comments) {
             post.comments = comments.map(serializer.serializeComment);
-            return res.json(post);
-        })
+            return res.json({"page": page, "comments": post.comments});
+        });
     })
 });
 

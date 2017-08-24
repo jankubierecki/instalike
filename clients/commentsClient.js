@@ -3,9 +3,10 @@ var mysqlPool = require('./mysqlPool');
 
 class CommentsClient {
     constructor() {
+        this.paginateBy = 10;
         this.createCommentSQL = "INSERT INTO `comments` (`userID`, `postID`, `responsePostID`, `description`) VALUES  (?, ?, ?, ?);";
         this.getCommentsSQL = "SELECT comments.id, comments.description, comments.userID, comments.createdAt, users.email, comments.responsePostID " +
-            "FROM `comments` INNER JOIN `users` ON comments.userID = users.id WHERE postID = ? ORDER BY createdAt DESC;";
+            "FROM `comments` INNER JOIN `users` ON comments.userID = users.id WHERE postID = ? ORDER BY createdAt DESC LIMIT ?,?;";
         this.updateCommentSQL = "UPDATE `comments` SET `responsePostID`= ?, `description`= ? WHERE id = ?;";
         this.deleteCommentSQL = "DELETE FROM `comments` WHERE `id` = ?;";
         this.getSpecificCommentSQL = "SELECT * FROM `comments` WHERE comments.id = ?;";
@@ -34,8 +35,8 @@ class CommentsClient {
     }
 
 
-    getComments(postID, cb) {
-        mysqlPool.query(this.getCommentsSQL, [postID], function (err, rows, fields) {
+    getComments(postID, page, cb) {
+        mysqlPool.query(this.getCommentsSQL, [postID, page * this.paginateBy, this.paginateBy], function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
         });
