@@ -50,9 +50,6 @@ class CommentsClient {
         });
     }
 
-
-    //todo paginate get comments
-    //todo likes
 }
 
 module.exports = new CommentsClient();
