@@ -52,13 +52,6 @@ class LikesClient {
         });
     }
 
-    getLike(id, cb) {
-        mysqlPool.query(this.getLikeSQL, [id], function (err, rows, fields) {
-            if (err) throw err;
-            cb(rows);
-        });
-    }
-
     getPostLikesCount(postID, cb) {
         mysqlPool.query(this.getPostLikesCountSQL, [postID], function (err, rows, fields) {
             if (err) throw err;

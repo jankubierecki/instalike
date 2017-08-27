@@ -8,6 +8,8 @@ class Serializer {
             "description": post.description,
             "createdAt": post.createdAt,
             "commentsCount": post.commentsCount,
+            "likesCount": post.likesCount,
+            "usersWhoLike": post.usersWhoLike,
             "fotoUrl": '/posts/uploads/posts/' + post.fotoPath.split('/').pop()
 
 
@@ -28,7 +30,9 @@ class Serializer {
             "authorID": comment.userID,
             "title": comment.title,
             "description": comment.description,
-            "createdAt": comment.createdAt
+            "createdAt": comment.createdAt,
+            "likesCount": comment.likesCount,
+            "usersWhoLike": comment.usersWhoLike
         };
 
         if (comment.responsePostID !== null) {
