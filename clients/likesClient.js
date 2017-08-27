@@ -9,7 +9,6 @@ class LikesClient {
         this.deleteCommentLikeSQL = "DELETE FROM `likes` WHERE userID = ? AND commentID = ?;";
         this.getPostLikesCountSQL = "SELECT COUNT(*) AS postLikes FROM `likes` WHERE postID = ?;";
         this.getCommentLikesCountSQL = "SELECT COUNT(*) AS commentLikes FROM `likes` WHERE commentID = ?;";
-        this.getLikeSQL = "SELECT * FROM `likes` WHERE id = ?;";
         this.getPostLikersSQL =
             "SELECT u.id AS userID, u.email AS userEmail " +
             "FROM users AS u " +

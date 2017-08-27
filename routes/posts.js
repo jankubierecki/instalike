@@ -109,9 +109,9 @@ router.get('/:id(\\d+)/', function (req, res, next) {
 
         commentsClient.getComments(post.id, page, function (comments) {
             post.comments = comments.map(serializer.serializeComment);
-            return res.json({"page": page, "comments": post.comments});
+            return res.json({post});
         });
-    })
+    });
 });
 
 // GET PHOTO FILE
