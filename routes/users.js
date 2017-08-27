@@ -95,7 +95,7 @@ router.post('/friends', function (req, res, next) {
                     return res.sendStatus(201);
                 });
             }
-            else return res.sendStatus(200);
+            else return res.sendStatus(403);
 
         })
 

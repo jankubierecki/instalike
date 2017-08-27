@@ -1,11 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var userClient = require('../clients/userClient');
 var postClient = require('../clients/postClient');
 var commentsClient = require('../clients/commentsClient');
 var likesClient = require('../clients/likesClient');
-var serializer = require('../serializer/serializer');
-var validation = require('../clients/validations');
 
 
 //LIKE A POST

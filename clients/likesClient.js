@@ -3,24 +3,24 @@ var mysqlPool = require('./mysqlPool');
 
 class LikesClient {
     constructor() {
-        this.addPostLikeSQL = "INSERT INTO `likes`(`userID`, `postID`) VALUES (?, ?);";
-        this.addCommentLikeSQL = "INSERT INTO `likes`(`userID`, `commentID`) VALUES (?, ?);";
-        this.deletePostLikeSQL = "DELETE FROM `likes` WHERE userID = ? AND postID = ?;";
-        this.deleteCommentLikeSQL = "DELETE FROM `likes` WHERE userID = ? AND commentID = ?;";
-        this.getPostLikesCountSQL = "SELECT COUNT(*) AS postLikes FROM `likes` WHERE postID = ?;";
-        this.getCommentLikesCountSQL = "SELECT COUNT(*) AS commentLikes FROM `likes` WHERE commentID = ?;";
+        this.addPostLikeSQL = "INSERT INTO `posts_likes`(`userID`, `postID`) VALUES (?, ?);";
+        this.addCommentLikeSQL = "INSERT INTO `comments_likes`(`userID`, `commentID`) VALUES (?, ?);";
+        this.deletePostLikeSQL = "DELETE FROM `posts_likes` WHERE userID = ? AND postID = ?;";
+        this.deleteCommentLikeSQL = "DELETE FROM `comments_likes` WHERE userID = ? AND commentID = ?;";
+        this.getPostLikesCountSQL = "SELECT COUNT(*) AS postLikes FROM `posts_likes` WHERE postID = ?;";
+        this.getCommentLikesCountSQL = "SELECT COUNT(*) AS commentLikes FROM `comments_likes` WHERE commentID = ?;";
         this.getPostLikersSQL =
             "SELECT u.id AS userID, u.email AS userEmail " +
             "FROM users AS u " +
-            "INNER JOIN likes AS l ON u.id = l.userID " +
+            "INNER JOIN posts_likes AS l ON u.id = l.userID " +
             "WHERE postID = ?;";
         this.getCommentLikersSQL =
             "SELECT u.id AS userID, u.email AS userEmail " +
             "FROM users AS u " +
-            "INNER JOIN likes AS l ON u.id = l.userID " +
+            "INNER JOIN comments_likes AS l ON u.id = l.userID " +
             "WHERE commentID = ?;";
-        this.hasPostUserLikeSQL = "SELECT EXISTS (SELECT * FROM likes WHERE userID = ? AND postID = ?) AS hasPostLike;";
-        this.hasCommentUserLikeSQL = "SELECT EXISTS (SELECT * FROM likes WHERE userID = ? AND commentID = ?) AS hasCommentLike;";
+        this.hasPostUserLikeSQL = "SELECT EXISTS (SELECT * FROM posts_likes WHERE userID = ? AND postID = ?) AS hasPostLike;";
+        this.hasCommentUserLikeSQL = "SELECT EXISTS (SELECT * FROM comments_likes WHERE userID = ? AND commentID = ?) AS hasCommentLike;";
     }
 
     addPostLike(userID, postID, cb) {
