@@ -9,6 +9,7 @@ class LikesClient {
         this.deleteCommentLikeSQL = "DELETE FROM `likes` WHERE userID = ? AND commentID = ?;";
         this.getPostLikesCountSQL = "SELECT COUNT(*) AS postLikes FROM `likes` WHERE postID = ?;";
         this.getCommentLikesCountSQL = "SELECT COUNT(*) AS commentLikes FROM `likes` WHERE commentID = ?;";
+        this.getLikeSQL = "SELECT * FROM `likes` WHERE id = ?;";
         this.getPostLikersSQL =
             "SELECT u.id AS userID, u.email AS userEmail " +
             "FROM users AS u " +
@@ -19,6 +20,8 @@ class LikesClient {
             "FROM users AS u " +
             "INNER JOIN likes AS l ON u.id = l.userID " +
             "WHERE commentID = ?;";
+        this.hasPostUserLikeSQL = "SELECT EXISTS (SELECT * FROM likes WHERE userID = ? AND postID = ?) AS hasPostLike;";
+        this.hasCommentUserLikeSQL = "SELECT EXISTS (SELECT * FROM likes WHERE userID = ? AND commentID = ?) AS hasCommentLike;";
     }
 
     addPostLike(userID, postID, cb) {
@@ -46,6 +49,13 @@ class LikesClient {
         mysqlPool.query(this.deleteCommentLikeSQL, [userID, commentID], function (err, rows, fields) {
             if (err) throw err;
             cb();
+        });
+    }
+
+    getLike(id, cb) {
+        mysqlPool.query(this.getLikeSQL, [id], function (err, rows, fields) {
+            if (err) throw err;
+            cb(rows);
         });
     }
 
@@ -77,8 +87,19 @@ class LikesClient {
         });
     }
 
+    hasPostUserLike(userID, postID, cb) {
+        mysqlPool.query(this.hasPostUserLikeSQL, [userID, postID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(Boolean(rows[0].hasPostLike));
+        });
+    }
 
+    hasCommentUserLike(userID, commentID, cb) {
+        mysqlPool.query(this.hasCommentUserLikeSQL, [userID, commentID], function (err, rows, fields) {
+            if (err) throw err;
+            cb(Boolean(rows[0].hasCommentLike));
+        });
+    }
 }
-
 
 module.exports = new LikesClient();

@@ -80,21 +80,21 @@ class UserClient {
         mysqlPool.query(this.getFriendsCountSQL, [userID], function (err, rows, fields) {
             if (err) throw err;
             cb(rows[0].friendsCount);
-        })
+        });
     }
 
     getUserFollowersCount(userID, cb) {
         mysqlPool.query(this.getUserFollowersCountSQL, [userID], function (err, rows, fields) {
             if (err) throw err;
             cb(rows[0].userFollowersCount);
-        })
+        });
     }
 
     hasFriend(userID, friendID, cb) {
         mysqlPool.query(this.hasFriendSQL, [userID, friendID], function (err, rows, fields) {
             if (err) throw err;
             cb(Boolean(rows[0].hasFriend));
-        })
+        });
     }
 }
 
