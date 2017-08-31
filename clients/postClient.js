@@ -82,9 +82,11 @@ class PostClient {
     }
 
     searchPost(queries, cb) {
-        let baseSQL = "SELECT * FROM `posts` WHERE";
+        let baseSQL = "SELECT posts.*, COUNT(DISTINCT comments.id) AS commentsCount, COUNT(DISTINCT posts_likes.id) AS likesCount " +
+            "FROM `posts` LEFT JOIN comments ON posts.id = comments.postID " +
+            "LEFT JOIN posts_likes ON posts.id = posts_likes.postID  WHERE";
         let likeSQL = " title LIKE CONCAT('%', ?, '%')";
-        let orderSQL = " ORDER BY createdAt DESC";
+        let orderSQL = " GROUP BY posts.id ORDER BY createdAt DESC";
         let finalSQL = baseSQL;
         for (let i in queries) {
             if (i === '0') {
