@@ -57,11 +57,11 @@ router.post('/login', function (req, res, next) {
                 })
             } else {
                 res.status(400);
-                return res.json({error: {email: "Password is not vaild"}});
+                return res.json({errors: {password: ["Password is not valid"]}});
             }
         } else {
             res.status(400);
-            return res.json({error: {email: "User Does not Exist"}});
+            return res.json({errors: {email: ["User Does not Exist"]}});
 
         }
 

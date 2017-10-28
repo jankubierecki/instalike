@@ -27,7 +27,7 @@ class PostClient {
             "WHERE posts.userID IN (SELECT friendID FROM friends WHERE userID = ?) OR posts.userID = ? " +
             "GROUP BY posts.id " +
             "ORDER BY posts.createdAt DESC LIMIT ?,?;";
-        this.isLatherThanSQL = "SELECT * FROM  comments WHERE createdAt >= (NOW() - INTERVAL 2 MINUTE);";
+        this.isOlderThanSQL = "SELECT * FROM comments WHERE comments.id = ? AND createdAt >= (NOW() - INTERVAL 2 MINUTE);";
 
     }
 
@@ -102,8 +102,8 @@ class PostClient {
         });
     }
 
-    isOlderThan(cb) {
-        mysqlPool.query(this.isLatherThanSQL, function (err, rows, fields) {
+    isOlderThan(commentID, cb) {
+        mysqlPool.query(this.isOlderThanSQL, [commentID], function (err, rows, fields) {
             if (err) throw err;
             cb(rows);
         });

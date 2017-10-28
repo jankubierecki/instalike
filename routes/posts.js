@@ -238,20 +238,20 @@ router.put('/comments/:id(\\d+)/update', function (req, res, next) {
         res.status(400);
         return res.json({"errors": validationErrors});
     }
+
     //get comment you want to update
     commentsClient.getSpecificComment(commentID, function (comments) {
+
         //check if comment exists
         if (comments.length === 0) return res.sendStatus(404);
         let comment = comments[0];
+
         //check if comment was created LESS than 2 mins ago
-        postClient.isOlderThan(function (comments) {
-            let arr = comments.map(val => {
-                return val.id;
-            });
+        postClient.isOlderThan(commentID, function (comments) {
+
             //if comment was created LESS than 2 mins ago, you can update it
-            if (arr.filter(val => {
-                    return val === parseInt(commentID)
-                }).length !== 0) {
+            if (comments.length !== 0) {
+
                 //check if user is author of the comment
                 if (comment.userID === user) {
 
