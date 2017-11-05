@@ -1,2 +1,2 @@
 # instalike
-insta-like
+insta-like :)
