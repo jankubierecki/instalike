@@ -1,6 +1,5 @@
-# Instalike is Express.js based application with common social media platforms features
-
-Initially, created in the aim of **Instagram** recreation. 
+# Instalike 
+Instalike is Express.js based application with common social media platforms features
 
 ## Note
 
